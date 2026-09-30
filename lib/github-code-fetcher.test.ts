@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { rejects } from 'node:assert/strict';
-import { fetchRepoCode } from './github-code-fetcher.ts';
+import { fetchRepoCode } from './github-code-fetcher';
 
 test('fetchRepoCode throws on invalid GitHub URL', async () => {
   await rejects(

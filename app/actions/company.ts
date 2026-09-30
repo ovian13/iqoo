@@ -2,16 +2,38 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { z } from 'zod';
+
+const signupSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters long'),
+  name: z.string().min(2, 'Company name is required'),
+  domain: z.string().min(1, 'Domain is required'),
+});
 
 export async function signUpCompanyAction(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const name = formData.get('name') as string;
-  const domain = formData.get('domain') as string;
+  const emailRaw = formData.get('email') as string;
+  const passwordRaw = formData.get('password') as string;
+  const nameRaw = formData.get('name') as string;
+  const domainRaw = formData.get('domain') as string;
 
-  if (!email || !password || !name || !domain) {
+  if (!emailRaw || !passwordRaw || !nameRaw || !domainRaw) {
     throw new Error('All fields are required');
   }
+
+  const parseResult = signupSchema.safeParse({
+    email: emailRaw,
+    password: passwordRaw,
+    name: nameRaw,
+    domain: domainRaw,
+  });
+
+  if (!parseResult.success) {
+    // Return the first validation error message
+    throw new Error(parseResult.error.issues[0].message);
+  }
+
+  const { email, password, name, domain } = parseResult.data;
 
   const supabase = await createClient();
   const supabaseAdmin = await createAdminClient();
